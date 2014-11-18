@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>saveActiveFile</string>
+	<key>command</key>
+	<string>#!/usr/bin/env bash
+[[ -f "${TM_SUPPORT_PATH}/lib/bash_init.sh" ]] &amp;&amp; . "${TM_SUPPORT_PATH}/lib/bash_init.sh"
+
+# Source some support functions we need.
+. "${TM_SUPPORT_PATH}/lib/html.sh"
+. "${TM_SUPPORT_PATH}/lib/webpreview.sh"
+
+# Get the viewer program. Any program (that works with open -a &lt;name&gt;) can be used,
+# except 'html' which is reserved to mean the internal HTML window. This is also the
+# default option.
+
+## I am using the following extension to preview markdown files
+## https://chrome.google.com/webstore/detail/jmchmkecamhbiokiopfpnfgbidieafmd
+V="Google Chrome"
+M=${TM_LATEX_MASTER:-$TM_FILEPATH}
+DIR=`dirname "$M"`
+FILENAME=`basename "${M%.*}".Rmd`
+RESULT="${FILENAME%.*}.md"
+echo $FILENAME
+echo $DIR
+echo $RESULT
+
+# Switch to the right directory.
+cd "$TM_PROJECT_DIRECTORY"
+cd "$DIR"
+
+# Prepare output window.
+html_header 'knit html result' "$FILENAME"
+echo '&lt;h2&gt;Kniting…&lt;/h2&gt;'
+
+SW=${TM_SWEAVE_WD:=${TM_DIRECTORY}}
+echo -e "setwd('$SW'); library(knitr); KnitPost &lt;- function(input, base.url = '/', fig.path) { opts_knit\$set(base.url = base.url); opts_chunk\$set(fig.path = fig.path); opts_chunk\$set(fig.cap = 'center'); render_jekyll(); knit(input) }; fig.path &lt;- paste0('figs/', sub('.Rmd$', '', basename('$FILENAME')), '/'); KnitPost('$FILENAME', base.url='http://lcolladotor.github.io/', fig.path=fig.path); site.path &lt;- '/Users/lcollado/Dropbox/Computing/lcolladotor.github.com'; file.copy(sub('.Rmd', '.md', basename('$FILENAME')), file.path(site.path, '_posts/'), overwrite=TRUE); if(FALSE) unlink(file.path(site.path, fig.path), recursive=TRUE); file.copy(fig.path, file.path(site.path, 'figs/'), recursive=TRUE)" | R --vanilla --quiet | pre
+
+# If there is output and it's newer than the current document, then we go directly to preview or link to it.
+if [ -s "${RESULT}" -a ! "$RESULT" -ot "$FILENAME" ]; then
+	if [[ "$V" == html ]]; then
+		WEB_LOC="file://${DIR}/${RESULT}"
+		WEB_LOC="${WEB_LOC//\\#/%23}"
+		redirect "${WEB_LOC}"
+	else
+		V=${V%.app} # strip potential .app extension
+		if find_app &gt;/dev/null "$V.app"; then
+			#open -a "$V" "$RESULT"
+			## Run: jekyll serve -w
+			## Then this will open Google Chrome on the localhost
+			echo $RESULT
+			open -a "$V" "http://localhost:4000/"
+		else
+			strong "Error locating external viewer: $V"
+		fi
+	fi
+else
+	strong "Error: Markdown file not written to disk"
+fi
+html_footer
+</string>
+	<key>input</key>
+	<string>document</string>
+	<key>inputFormat</key>
+	<string>text</string>
+	<key>keyEquivalent</key>
+	<string>~e</string>
+	<key>name</key>
+	<string>knit to post</string>
+	<key>outputCaret</key>
+	<string>afterOutput</string>
+	<key>outputFormat</key>
+	<string>html</string>
+	<key>outputLocation</key>
+	<string>newWindow</string>
+	<key>uuid</key>
+	<string>0BDB244D-3CC4-407A-8936-7F7D2B9F6C5A</string>
+	<key>version</key>
+	<integer>2</integer>
+</dict>
+</plist>
