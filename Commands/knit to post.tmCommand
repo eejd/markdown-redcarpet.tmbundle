@@ -36,7 +36,7 @@ html_header 'knit html result' "$FILENAME"
 echo '&lt;h2&gt;Kniting…&lt;/h2&gt;'
 
 SW=${TM_SWEAVE_WD:=${TM_DIRECTORY}}
-echo -e "setwd('$SW'); library(knitr); KnitPost &lt;- function(input, base.url = '/', fig.path) { opts_knit\$set(base.url = base.url); opts_chunk\$set(fig.path = fig.path); opts_chunk\$set(fig.cap = 'center'); render_jekyll(); knit(input) }; fig.path &lt;- paste0('figs/', sub('.Rmd$', '', basename('$FILENAME')), '/'); KnitPost('$FILENAME', base.url='http://lcolladotor.github.io/', fig.path=fig.path); site.path &lt;- '/Users/lcollado/Dropbox/Code/lcolladotor.github.com'; file.copy(sub('.Rmd', '.md', basename('$FILENAME')), file.path(site.path, '_posts/'), overwrite=TRUE); if(FALSE) unlink(file.path(site.path, fig.path), recursive=TRUE); file.copy(fig.path, file.path(site.path, 'figs/'), recursive=TRUE)" | R --vanilla --quiet | pre
+echo -e "setwd('$SW'); library(knitr); KnitPost &lt;- function(input, base.url = '/', fig.path) { opts_knit\$set(base.url = base.url); opts_chunk\$set(fig.path = fig.path); opts_chunk\$set(fig.cap = 'center'); render_markdown(TRUE); knit(input) }; fig.path &lt;- paste0('figs/', sub('.Rmd$', '', basename('$FILENAME')), '/'); KnitPost('$FILENAME', base.url='http://lcolladotor.github.io/', fig.path=fig.path); site.path &lt;- '/Users/lcollado/Dropbox/Code/hugoblog'; file.copy(sub('.Rmd', '.md', basename('$FILENAME')), file.path(site.path, 'content', 'post/'), overwrite=TRUE); if(FALSE) unlink(file.path(site.path, fig.path), recursive=TRUE); file.copy(fig.path, file.path(site.path, 'static', 'figs/'), recursive=TRUE)" | R --vanilla --quiet | pre
 
 # If there is output and it's newer than the current document, then we go directly to preview or link to it.
 if [ -s "${RESULT}" -a ! "$RESULT" -ot "$FILENAME" ]; then
@@ -51,7 +51,7 @@ if [ -s "${RESULT}" -a ! "$RESULT" -ot "$FILENAME" ]; then
 			## Run: jekyll serve -w
 			## Then this will open Google Chrome on the localhost
 			echo $RESULT
-			open -a "$V" "http://localhost:4000/"
+			open -a "$V" "http://localhost:1313/"
 		else
 			strong "Error locating external viewer: $V"
 		fi
